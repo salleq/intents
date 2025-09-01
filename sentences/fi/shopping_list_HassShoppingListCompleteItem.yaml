@@ -1,0 +1,11 @@
+language: "fi"
+intents:
+  HassShoppingListCompleteItem:
+    data:
+      - sentences:
+          - (merkkaa|merkitse) (<item>;valmiiksi) <my_list>
+          - poista <item> <my_list>
+        response: item_completed
+        expansion_rules:
+          my_list: "(ostoslista|ostoslistalta|ostoslistaltani|ostoslistasta|ostoslistastani|ostoslistalla)"
+          item: "{shopping_list_item:item}"

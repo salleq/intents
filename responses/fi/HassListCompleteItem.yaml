@@ -1,0 +1,5 @@
+language: "fi"
+responses:
+  intents:
+    HassListCompleteItem:
+      item_completed: "{{ slots.item }} merkittiin valmiiksi"

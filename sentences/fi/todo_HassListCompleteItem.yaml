@@ -1,0 +1,15 @@
+language: "fi"
+intents:
+  HassListCompleteItem:
+    data:
+      - sentences:
+          - (merkitse|merkkaa) <item> valmiiksi (listalla|listalta) <my_list>
+          - (merkitse|merkkaa) valmiiksi <item> (listalla|listalta) <my_list>
+          - (poista|ota pois) (<item>;(listalla|listalta) <my_list>)
+          - poista <item> {name}
+        response: item_completed
+        requires_context:
+          domain: todo
+        expansion_rules:
+          my_list: "{name}"
+          item: "{todo_list_item:item}"

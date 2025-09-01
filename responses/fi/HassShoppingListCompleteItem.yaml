@@ -1,0 +1,5 @@
+language: "fi"
+responses:
+  intents:
+    HassShoppingListCompleteItem:
+      item_completed: "{{ slots.item }} poistettiin ostoslistalta"

@@ -1,0 +1,16 @@
+language: fi
+tests:
+  - sentences:
+      - merkitse vie roskat valmiiksi listalta kotityöt
+      - ota pois vie roskat listalta kotityöt
+      - poista vie roskat listalta kotityöt
+      - merkkaa valmiiksi vie roskat listalta kotityöt
+      - merkkaa vie roskat valmiiksi listalta kotityöt
+      - poista listalta kotityöt vie roskat
+      - poista vie roskat kotityöt
+    intent:
+      name: HassListCompleteItem
+      slots:
+        item: "vie roskat"
+        name: "Kotityöt"
+    response: "vie roskat merkittiin valmiiksi"

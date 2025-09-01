@@ -438,6 +438,10 @@ entities:
     id: "todo.rautakauppa"
     state: ""
 
+  - name: "Kotityöt"
+    id: "todo.kotityot"
+    state: ""
+
   - name: "Pääventtiili"
     id: "valve.main_valve"
     state: "open"
