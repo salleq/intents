@@ -27,6 +27,7 @@ class State:
     area_id: Optional[str] = None
     human_state: Optional[str] = None
     aliases: Set[str] = field(default_factory=set)
+    is_exposed: bool = True
     _domain: Optional[str] = None
 
     @property
@@ -102,6 +103,13 @@ class Timer:
         }
 
 
+@dataclass
+class BrowseMedia:
+    """Minimal HA-like object for media search and play."""
+
+    title: str
+
+
 def get_matched_states(
     states: List[State],
     areas: List[AreaEntry],
@@ -167,6 +175,10 @@ def get_matched_states(
     unmatched: List[State] = []
 
     for state in states:
+        if not state.is_exposed:
+            # Ignore unexposed entities
+            continue
+
         if entity_name is not None:
             name_match = _normalize_name(state.name) == entity_name
 
@@ -276,6 +288,21 @@ def get_matched_timers(timers: List[Timer], result: RecognizeResult) -> List[Tim
     return timers
 
 
+def get_matched_media(
+    media: List[BrowseMedia], result: RecognizeResult
+) -> List[BrowseMedia]:
+    """Get media that matches a search."""
+    if result.intent.name not in ("HassMediaSearchAndPlay",):
+        return []
+
+    slots = {slot.name: slot.value for slot in result.entities.values()}
+    search_query = slots.get("search_query")
+    if not search_query:
+        return []
+
+    return [m for m in media if m.title == search_query]
+
+
 def _normalize_name(name: str) -> str:
     return name.strip().casefold()
 
@@ -292,6 +319,7 @@ def render_response(
     unmatched: Optional[List[State]] = None,
     env: Optional[Environment] = None,
     timers: Optional[List[Timer]] = None,
+    media: Optional[List[BrowseMedia]] = None,
 ) -> str:
     """Renders a response template using Jinja2."""
     assert response_template, "Empty response template"
@@ -325,6 +353,10 @@ def render_response(
     slots["date"] = _TEST_DATETIME.date()
     slots["time"] = _TEST_DATETIME.time()
 
+    # Media search/play
+    if media:
+        slots["media"] = media[0]  # first result only
+
     return env.from_string(response_template).render(
         {
             "slots": slots,
@@ -335,6 +367,7 @@ def render_response(
                 "total_results": len(matched) + len(unmatched),
             },
             "state_attr": partial(state_attr, matched),
+            "metadata": result.intent_metadata,
         }
     )
 
@@ -442,6 +475,7 @@ def get_states(fixtures: dict[str, Any]) -> List[State]:
                 human_state=human_state,
                 area_id=entity.get("area"),
                 attributes=entity.get("attributes", {}),
+                is_exposed=entity.get("is_exposed", True),
             )
         )
     return states
@@ -529,3 +563,13 @@ def get_timers(fixtures: dict[str, Any]) -> List[Timer]:
             )
         )
     return timers
+
+
+def get_media_items(fixtures: dict[str, Any]) -> List[BrowseMedia]:
+    """Load media items from test fixtures."""
+    media: List[BrowseMedia] = []
+
+    for media_dict in fixtures.get("media", []):
+        media.append(BrowseMedia(title=media_dict["title"]))
+
+    return media

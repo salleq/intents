@@ -746,7 +746,7 @@ HassClimateSetTemperature:
 HassClimateGetTemperature:
   supported: true
   domain: climate
-  description: "Gets the indoor temperature"
+  description: "Gets the actual indoor temperature (not the desired indoor temperature as set by HassClimateSetTemperature)"
   slots:
     name:
       description: "Name of a device or entity"
@@ -907,7 +907,7 @@ HassListAddItem:
 # -----------------------------------------------------------------------------
 
 HassListCompleteItem:
-  supported: false
+  supported: true
   domain: todo
   description: "Checks off an item from a todo list"
   slots:
@@ -1194,7 +1194,8 @@ HassSetVolume:
     default:
       description: "Set the volume of the currently playing media player"
       importance: "complete"
-      slots: []
+      slots:
+        - "volume_level"
       context_area: true
       example: "set volume to 50%"
 
@@ -1204,6 +1205,7 @@ HassSetVolume:
       description: "Set the volume of a media player by name"
       slots:
         - "name"
+        - "volume_level"
       name_domains:
         complete:
           - "media_player"
@@ -1216,7 +1218,194 @@ HassSetVolume:
       importance: "complete"
       slots:
         - "area"
+        - "volume_level"
       example: "set volume in kitchen to 50%"
+
+# -----------------------------------------------------------------------------
+
+HassSetVolumeRelative:
+  supported: true
+  domain: media_player
+  description: "Increases or decreases the volume of a media player"
+  slots:
+    volume_step:
+      description: "up, down, or the percentage to change from -100 to 100"
+      required: true
+    name:
+      description: "Name of a device or entity"
+      required: false
+    area:
+      description: "Name of an area"
+      required: false
+    floor:
+      description: "Name of a floor"
+      required: false
+  slot_combinations:
+    default:
+      description: "Change the volume of the currently playing media player"
+      importance: "complete"
+      slots:
+        - "volume_step"
+      context_area: true
+      example:
+        - "increase volume"
+        - "increase volume by 20%"
+
+    # -------------------------------------------------------------------------
+
+    name_only:
+      description: "Change the volume of a media player by name"
+      slots:
+        - "volume_step"
+        - "name"
+      name_domains:
+        complete:
+          - "media_player"
+      example:
+        - "decrease TV volume"
+        - "decrease TV volume by 20%"
+
+    # -------------------------------------------------------------------------
+
+    area_only:
+      description: "Change the volume of the currently playing media player in an area"
+      importance: "complete"
+      slots:
+        - "volume_step"
+        - "area"
+      example:
+        - "decrease volume in kitchen"
+        - "decrease volume in kitchen by 20%"
+
+    # -------------------------------------------------------------------------
+
+    floor_only:
+      description: "Change the volume of the currently playing media player in an area"
+      importance: "complete"
+      slots:
+        - "volume_step"
+        - "area"
+      example:
+        - "increase volume on first floor"
+        - "increase volume on first floor by 20%"
+
+# -----------------------------------------------------------------------------
+
+HassMediaSearchAndPlay:
+  supported: true
+  domain: media_player
+  description: "Searched for a media item and plays it"
+  slots:
+    name:
+      description: "Name of a device or entity"
+      required: false
+    area:
+      description: "Name of an area"
+      required: false
+    search_query:
+      description: "Media to search for and play"
+      required: true
+    media_class:
+      description: "Type of media to search for (album, app, artist, channel, composer, contributing_artist, directory, episode, game, genre, image, movie, music, playlist, podcast, season, track, tv_show, url, video)"
+      required: false
+  slot_combinations:
+    default:
+      description: "Search and play on the media player in the voice satellite's area"
+      importance: "optional"
+      slots:
+        - "search_query"
+      context_area: true
+      example: "play Pink Floyd"
+
+    # -------------------------------------------------------------------------
+
+    name_only:
+      description: "Search and play on a media player by name"
+      slots:
+        - "name"
+        - "search_query"
+      name_domains:
+        optional:
+          - "media_player"
+      example: "play Pink Floyd on Sonos Speakers"
+
+    # -------------------------------------------------------------------------
+
+    area_only:
+      description: "Search and play on the media player in an area"
+      importance: "optional"
+      slots:
+        - "area"
+        - "search_query"
+      example: "play Pink Floyd in the Living Room"
+
+    # -------------------------------------------------------------------------
+
+    name_area:
+      description: "Search and play on a media player by name in an area"
+      name_domains:
+        optional:
+          - "media_player"
+      slots:
+        - "name"
+        - "area"
+        - "search_query"
+      example: "play Pink Floyd on the Sonos Speakers in the Living Room"
+
+    # -------------------------------------------------------------------------
+
+    media_class_only:
+      description: "Search and play a specific type of media on the media player in the voice satellite's area"
+      importance: "optional"
+      slots:
+        - "search_query"
+        - "media_class"
+      context_area: true
+      example: "play Pink Floyd playlist"
+
+    # -------------------------------------------------------------------------
+
+    name_media_class:
+      description: "Search and play a specific type of media on a media player by name"
+      slots:
+        - "name"
+        - "search_query"
+        - "media_class"
+      name_domains:
+        optional:
+          - "media_player"
+      example: "play Pink Floyd album on Sonos Speakers"
+
+    # -------------------------------------------------------------------------
+
+    area_media_class:
+      description: "Search and play a specific type of media on the media player in an area"
+      importance: "optional"
+      slots:
+        - "area"
+        - "search_query"
+        - "media_class"
+      example: "play Pink Floyd movie in the Living Room"
+
+    # -------------------------------------------------------------------------
+
+    name_area_media_class:
+      description: "Search and play a specific type of media on a media player by name in an area"
+      name_domains:
+        optional:
+          - "media_player"
+      slots:
+        - "name"
+        - "area"
+        - "search_query"
+        - "media_class"
+      example: "play Pink Floyd podcast on the Sonos Speakers in the Living Room"
+
+  response_variables:
+    media:
+      description: |
+        Matched media item is search was successful (None if not).
+        This is a BrowseMedia object from Home Assistant.
 
 # -----------------------------------------------------------------------------
 # timers
@@ -2325,7 +2514,7 @@ HassTimerStatus:
 
   response_variables:
     timers:
-      description: >-
+      description: |
         List of timer objects with:
           - is_active: true if timer is running (not paused)
           - name: name of the timer (optional)
@@ -2337,3 +2526,117 @@ HassTimerStatus:
           - start_hours: hours that the timer was started with
           - start_minutes: minutes that the timer was started with
           - start_seconds: seconds that the timer was started with
+
+# -----------------------------------------------------------------------------
+
+HassFanSetSpeed:
+  supported: false
+  domain: fan
+  description: "Set the speed of a fan"
+  slots:
+    name:
+      description: "Name of a device or entity"
+      required: false
+    area:
+      description: "Name of an area"
+      required: false
+    floor:
+      description: "Name of a floor"
+      required: false
+    percentage:
+      description: "Speed percentage from 0 to 100"
+      required: true
+  slot_combinations:
+    default:
+      description: "Sets the speed of fans in the voice satellite's area"
+      importance: "complete"
+      slots:
+        - "percentage"
+      context_area: true
+      example: "set fans to 50%"
+
+    # -------------------------------------------------------------------------
+
+    name_only:
+      description: "Set the speed of a fan by name"
+      slots:
+        - "name"
+        - "percentage"
+      name_domains:
+        complete:
+          - "fan"
+      example: "set ceiling fan to 50%"
+
+    # -------------------------------------------------------------------------
+
+    area_only:
+      description: "Set the speed of all fans in an area"
+      importance: "complete"
+      slots:
+        - "area"
+        - "percentage"
+      example: "set kitchen fans to 50%"
+
+    # -------------------------------------------------------------------------
+
+    floor_only:
+      description: "Set the speed of all fans on a floor"
+      importance: "complete"
+      slots:
+        - "floor"
+        - "percentage"
+      example: "set first floor fans to 50%"
+
+# -----------------------------------------------------------------------------
+# lawn_mower
+# -----------------------------------------------------------------------------
+
+HassLawnMowerStartMowing:
+  supported: true
+  domain: lawn_mower
+  description: "Starts a lawn mower"
+  slots:
+    name:
+      description: "Name of a device or entity"
+      required: false
+  slot_combinations:
+    default:
+      description: "Starts the only lawn mower"
+      slots: []
+      importance: "complete"
+      example: "start mowing"
+
+    name_only:
+      description: "Starts a mower by name"
+      slots:
+        - "name"
+      name_domains:
+        complete:
+          - "lawn_mower"
+      example: "start clippy"
+
+# -----------------------------------------------------------------------------
+
+HassLawnMowerDock:
+  supported: true
+  domain: lawn_mower
+  description: "Sends a lawn mower to dock"
+  slots:
+    name:
+      description: "Name of a device or entity"
+      required: false
+  slot_combinations:
+    default:
+      description: "Sends the only lawn mower to dock"
+      slots: []
+      importance: "complete"
+      example: "stop mowing"
+
+    name_only:
+      description: "Sends a lawn mower to dock by name"
+      slots:
+        - "name"
+      name_domains:
+        complete:
+          - "lawn_mower"
+      example: "return clippy to base"

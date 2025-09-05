@@ -743,6 +743,10 @@ entities:
   - name: "John"
     id: "person.john"
     state: "not_home"
+  - name: "Bob"
+    id: "person.bob"
+    state: "home"
+    is_exposed: false
 
   - name: "Trader Joe[']s"
     id: "todo.trader_joes"
@@ -770,6 +774,11 @@ entities:
     area: "living_room_id"
     state: "idle"
 
+  - name: "Clippy"
+    id: "lawn_mower.clippy"
+    area: "outside_id"
+    state: "docked"
+
 timers:
   - is_active: false
     start_hours: 1
@@ -789,3 +798,13 @@ timers:
     rounded_hours_left: 0
     rounded_minutes_left: 3
     rounded_seconds_left: 0
+
+media:
+  - title: "The Office"
+  - title: "Bohemian Rhapsody"
+  - title: "Queen"
+  - title: "Beatles"
+  - title: "My Favorites"
+  - title: "Serial"
+  - title: "Inception"
+  - title: "Breaking Bad"
